@@ -1,0 +1,3 @@
+# doc requirements
+recommonmark==0.4.0
+sphinx==1.4.6

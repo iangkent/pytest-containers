@@ -1,0 +1,47 @@
+version: '3.4'
+
+services:
+      
+  test:
+    build: .
+    image: pytest-containers:${DOCKER_IMAGE_TAG:-latest}
+    command: tests/test_containers.py
+    volumes:
+      - .:/usr/src
+      - /var/run/docker.sock:/var/run/docker.sock      
+    working_dir: /usr/src
+
+  shell:
+    image: pytest-containers:${DOCKER_IMAGE_TAG:-latest}
+    entrypoint:
+      - /bin/sh
+    command: -c "pip install --editable /usr/src;/bin/sh"
+    volumes:
+      # the directory’s existing contents are obscured by the bind mount
+      - .:/usr/src
+      - /var/run/docker.sock:/var/run/docker.sock      
+      - ~/.bash_history:/root/.bash_history
+    working_dir: /usr/src
+    stdin_open: true
+    tty: true
+
+  docs:
+    image: pytest-containers:${DOCKER_IMAGE_TAG:-latest}
+    entrypoint: /usr/local/bin/sphinx-build
+    command: docs docs/_build
+    volumes:
+      - .:/usr/src
+    working_dir: /usr/src
+
+  python:
+    image: pytest-containers:${DOCKER_IMAGE_TAG:-latest}
+    entrypoint:
+      - /usr/local/bin/python
+    command: -i -c "import pytest_containers.dockerx;docker_client = pytest_containers.dockerx.from_env()"
+    volumes:
+      - .:/usr/src/pytest_containers
+      - /var/run/docker.sock:/var/run/docker.sock      
+      - ~/.bash_history:/root/.bash_history
+    working_dir: /usr/src/pytest_containers
+    stdin_open: true
+    tty: true
